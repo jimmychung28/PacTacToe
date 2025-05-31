@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct StartView: View {
@@ -18,6 +16,12 @@ struct StartView: View {
     }
     var body: some View {
             VStack {
+                Text("Pac-Tac-Toe 🦙")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .padding(.bottom, 20)
+                
                 Picker("Select Game", selection: $gameType) {
                     Text("Select Game Type").tag(GameType.undetermined)
                     Text("Two Sharing device").tag(GameType.single)
@@ -69,7 +73,6 @@ struct StartView: View {
                 Spacer()
             }
             .padding()
-            .navigationTitle("Pac-Tac-Toe 🦙")
             .fullScreenCover(isPresented: $startGame) {
                 GameView()
                     .environmentObject(connectionManager)

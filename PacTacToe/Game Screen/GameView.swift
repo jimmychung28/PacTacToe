@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct GameView: View {
@@ -7,6 +6,12 @@ struct GameView: View {
     @Environment(\.dismiss) var dismiss
     var body: some View {
         VStack {
+            Text("Pac-Tac-Toe 🦙")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 20)
+            
             if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy{ $0 == false} {
                 Text("Select a player to start")
             }
@@ -97,7 +102,6 @@ struct GameView: View {
                 .buttonStyle(.bordered)
             }
         }
-        .navigationTitle("Pac-Tac-Toe 🦙")
         .onAppear {
             game.reset()
             if game.gameType == .peer {

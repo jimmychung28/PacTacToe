@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct YourNameView: View {
@@ -7,7 +5,14 @@ struct YourNameView: View {
     @State private var userName = ""
     var body: some View {
         VStack {
+            Text("Pac-Tac-Toe 🦙")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 20)
+            
             Text("This is the paca name that will be associated with this device.")
+                .multilineTextAlignment(.center)
             TextField("Your Paca Name", text: $userName)
                 .textFieldStyle(.roundedBorder)
             Button("Set") {
@@ -23,7 +28,6 @@ struct YourNameView: View {
                 .frame(width: 0.0)
         }
         .padding()
-        .navigationTitle("Pac-Tac-Toe 🦙")
         .inNavigationStack()
     }
 }
