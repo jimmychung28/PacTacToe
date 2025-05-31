@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 @MainActor
@@ -102,11 +100,80 @@ class GameService: ObservableObject {
     func deviceMove() async {
         isThinking.toggle()
         try? await Task.sleep(nanoseconds: 1_000_000_000)
-        if let move = possibleMoves.randomElement() {
-            if let matchingIndex = Move.all.firstIndex(where: {$0 == move}) {
+        
+        // Find the best move using strategy
+        if let bestMove = findBestMove() {
+            if let matchingIndex = Move.all.firstIndex(where: {$0 == bestMove}) {
                 makeMove(at: matchingIndex)
             }
         }
+        
         isThinking.toggle()
+    }
+    
+    // MARK: - AI Strategy Functions
+    
+    private func findBestMove() -> Int? {
+        // Strategy priority:
+        // 1. Win if possible
+        // 2. Block opponent's winning move
+        // 3. Take center (position 5)
+        // 4. Take corners (1, 3, 7, 9)
+        // 5. Take edges (2, 4, 6, 8)
+        
+        // 1. Check if AI can win
+        if let winningMove = findWinningMove(for: player2) {
+            return winningMove
+        }
+        
+        // 2. Check if need to block opponent's win
+        if let blockingMove = findWinningMove(for: player1) {
+            return blockingMove
+        }
+        
+        // 3. Take center if available
+        if possibleMoves.contains(5) {
+            return 5
+        }
+        
+        // 4. Take corners
+        let corners = [1, 3, 7, 9]
+        for corner in corners {
+            if possibleMoves.contains(corner) {
+                return corner
+            }
+        }
+        
+        // 5. Take edges
+        let edges = [2, 4, 6, 8]
+        for edge in edges {
+            if possibleMoves.contains(edge) {
+                return edge
+            }
+        }
+        
+        // Fallback to random if nothing else works
+        return possibleMoves.randomElement()
+    }
+    
+    private func findWinningMove(for player: Player) -> Int? {
+        // Check each winning combination to see if player has 2 positions
+        // and the third position is available
+        for winningCombo in Move.winningMoves {
+            let playerPositions = winningCombo.filter { player.moves.contains($0) }
+            
+            // If player has 2 out of 3 positions in this winning combo
+            if playerPositions.count == 2 {
+                // Find the missing position
+                let missingPosition = winningCombo.first { !player.moves.contains($0) }
+                
+                // Check if the missing position is available
+                if let missingPos = missingPosition, possibleMoves.contains(missingPos) {
+                    return missingPos
+                }
+            }
+        }
+        
+        return nil
     }
 }
