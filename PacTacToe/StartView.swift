@@ -154,13 +154,17 @@ struct StartView: View {
             }
             .alert("Change Paca Name", isPresented: $changeName, actions: {
                 TextField("New paca name", text: $newName)
-                Button("OK", role: .destructive) {
-                    yourName = newName
-                    exit(-1)
+                Button("OK") {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        yourName = newName
+                        newName = ""
+                    }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("Cancel", role: .cancel) {
+                    newName = ""
+                }
             }, message: {
-                Text("Tapping on the OK button will quit the application so you can relaunch to use your changed paca name.")
+                Text("Enter your new paca name. The change will take effect immediately.")
             })
             .inNavigationStack()
     }
