@@ -92,7 +92,7 @@ enum GameType {
     }
 }
 
-enum GamePiece: String {
+enum GamePiece: String, Equatable {
     case x, o
     var image: Image {
         Image(self.rawValue)
@@ -100,7 +100,7 @@ enum GamePiece: String {
 }
 
 
-struct Player {
+struct Player: Equatable {
     let gamePiece: GamePiece
     var name: String
     var moves: [Int] = []

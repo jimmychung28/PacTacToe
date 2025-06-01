@@ -4,6 +4,10 @@ struct GameView: View {
     @EnvironmentObject var game: GameService
     @EnvironmentObject var connectionManager: MPConnectionManager
     @Environment(\.dismiss) var dismiss
+    @State private var gameOverScale: CGFloat = 0.8
+    @State private var titleOffset: CGFloat = -50
+    @State private var titleOpacity: Double = 0
+    
     var body: some View {
         VStack {
             Text("Pac-Tac-Toe 🦙")
@@ -11,21 +15,36 @@ struct GameView: View {
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 20)
+                .offset(y: titleOffset)
+                .opacity(titleOpacity)
+                .onAppear {
+                    withAnimation(.spring(response: 0.8, dampingFraction: 0.6)) {
+                        titleOffset = 0
+                        titleOpacity = 1
+                    }
+                }
             
             if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy{ $0 == false} {
                 Text("Select a player to start")
+                    .transition(.scale.combined(with: .opacity))
             }
-            HStack {
+            
+            HStack(spacing: 20) {
                 Button(game.player1.name) {
-                    game.player1.isCurrent = true
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                        game.player1.isCurrent = true
+                    }
                     if game.gameType == .peer {
                         let gameMove = MPGameMove(action: .start, playrName: game.player1.name, index: nil)
                         connectionManager.send(gameMove: gameMove)
                     }
                 }
                 .buttonStyle(PlayerButtonStyle(player: game.player1))
+                
                 Button(game.player2.name) {
-                    game.player2.isCurrent = true
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                        game.player2.isCurrent = true
+                    }
                     if game.gameType == .bot {
                         Task {
                             await game.deviceMove()
@@ -39,61 +58,125 @@ struct GameView: View {
                 .buttonStyle(PlayerButtonStyle(player: game.player2))
             }
             .disabled(game.gameStarted)
-            VStack {
-                HStack {
+            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: game.gameStarted)
+            
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
                     ForEach(0...2, id: \.self) { index in
                         SquareView(index: index)
                     }
                 }
-                HStack {
+                HStack(spacing: 8) {
                     ForEach(3...5, id: \.self) { index in
                         SquareView(index: index)
                     }
                 }
-                HStack {
+                HStack(spacing: 8) {
                     ForEach(6...8, id: \.self) { index in
                         SquareView(index: index)
                     }
                 }
             }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.gray.opacity(0.05))
+                    .shadow(radius: 10)
+            )
             .overlay {
                 if game.isThinking {
-                    VStack {
-                        Text(" Thinking... ")
-                            .foregroundColor(Color(.systemBackground))
-                            .background(Rectangle().fill(Color.primary))
-                        ProgressView()
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(.ultraThinMaterial)
+                        
+                        VStack(spacing: 15) {
+                            Text("🤔 Thinking...")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                            
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                        }
+                        .padding(30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color(.systemBackground))
+                                .shadow(radius: 15)
+                        )
                     }
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .scale.combined(with: .opacity)
+                    ))
                 }
             }
             .disabled(game.boardDisabled ||
                       game.gameType == .peer &&
                       connectionManager.myPeerId.displayName != game.currentPlayer.name)
-            VStack {
+            
+            VStack(spacing: 15) {
                 if game.gameOver {
-                    Text("Game Over")
-                    if game.possibleMoves.isEmpty {
-                        Text("Nobody wins")
-                    } else {
-                        Text("\(game.currentPlayer.name) wins!")
-                    }
-                    Button("New Game") {
-                        game.reset()
-                        if game.gameType == .peer {
-                            let gameMove = MPGameMove(action: .reset, playrName: nil, index: nil)
-                            connectionManager.send(gameMove: gameMove)
+                    VStack(spacing: 10) {
+                        Text("🎉 Game Over! 🎉")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        
+                        if game.possibleMoves.isEmpty {
+                            Text("🤝 It's a tie!")
+                                .font(.title2)
+                                .foregroundColor(.orange)
+                        } else {
+                            Text("🏆 \(game.currentPlayer.name) wins!")
+                                .font(.title2)
+                                .foregroundColor(.green)
+                        }
+                        
+                        Button("🎮 New Game") {
+                            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                                game.reset()
+                            }
+                            if game.gameType == .peer {
+                                let gameMove = MPGameMove(action: .reset, playrName: nil, index: nil)
+                                connectionManager.send(gameMove: gameMove)
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .scaleEffect(gameOverScale)
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                                gameOverScale = 1.1
+                            }
+                        }
+                        .onDisappear {
+                            gameOverScale = 0.8
                         }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(.ultraThinMaterial)
+                            .shadow(radius: 10)
+                    )
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity).combined(with: .move(edge: .bottom)),
+                        removal: .scale.combined(with: .opacity)
+                    ))
                 }
             }
-            .font(.largeTitle)
+            .animation(.spring(response: 0.8, dampingFraction: 0.6), value: game.gameOver)
+            
             Spacer()
         }
+        .padding()
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("End Game") {
-                    dismiss()
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        dismiss()
+                    }
                     if game.gameType == .peer {
                         let gameMove = MPGameMove(action: .end, playrName: nil, index: nil)
                         connectionManager.send(gameMove: gameMove)
@@ -122,13 +205,28 @@ struct GameView_Previews: PreviewProvider {
 
 struct PlayerButtonStyle: ButtonStyle {
     let player: Player
+    
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(8)
-            .background(RoundedRectangle(cornerRadius: 10)
-                .fill(player.isCurrent ? Color.green : Color.gray)
-            )
-            .foregroundColor(.white)
-        
+        if #available(iOS 16.0, *) {
+            configuration.label
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(player.isCurrent ? 
+                              LinearGradient(colors: [Color.green, Color.green.opacity(0.8)], startPoint: .top, endPoint: .bottom) :
+                                LinearGradient(colors: [Color.gray.opacity(0.6), Color.gray.opacity(0.4)], startPoint: .top, endPoint: .bottom)
+                             )
+                        .shadow(color: player.isCurrent ? Color.green.opacity(0.3) : Color.clear, radius: 8)
+                )
+                .foregroundColor(.white)
+                .fontWeight(.semibold)
+                .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+                .brightness(configuration.isPressed ? -0.1 : 0)
+                .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+                .animation(.spring(response: 0.5, dampingFraction: 0.7), value: player.isCurrent)
+        } else {
+            // Fallback on earlier versions
+        }
     }
 }
