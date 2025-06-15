@@ -2,6 +2,10 @@
 
 A fun twist on the classic Tic-Tac-Toe game for iOS, built with SwiftUI. Play solo against an intelligent AI, with friends on the same device, or connect with nearby players using peer-to-peer networking.
 
+## App Store
+
+[PacTacToe](https://apps.apple.com/ca/app/pactactoe/id6670736893)
+
 ## Features
 
 ### Game Modes
