@@ -5,11 +5,15 @@ struct SquareView: View {
     @EnvironmentObject var connectionManager: MPConnectionManager
     @State private var isPressed = false
     @State private var pieceScale: CGFloat = 0.0
+    private let hapticManager = HapticManager.shared
     let index: Int
     
     var body: some View {
         Button {
             if !game.isThinking {
+                // Play button press haptic
+                hapticManager.playHaptic(HapticManager.Feedback.button)
+                
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     pieceScale = 1.0
                 }

@@ -7,6 +7,8 @@ struct GameView: View {
     @State private var gameOverScale: CGFloat = 0.8
     @State private var titleOffset: CGFloat = -50
     @State private var titleOpacity: Double = 0
+    @State private var showAlpacaAnimation = false
+    @State private var alpacaAnimationType: AlpacaAnimationType = .entrance
     
     var body: some View {
         GeometryReader { geometry in
@@ -22,6 +24,52 @@ struct GameView: View {
             game.reset()
             if game.gameType == .peer {
                 connectionManager.setup(game: game)
+            }
+            
+            // Show entrance animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                showAlpacaAnimation = true
+                alpacaAnimationType = .entrance
+            }
+        }
+        .onChange(of: game.gameOver) { gameOver in
+            if gameOver {
+                if game.possibleMoves.isEmpty {
+                    // Tie game
+                    alpacaAnimationType = .confused
+                } else if game.currentPlayer.name == game.player1.name && game.gameType != .bot {
+                    // Player 1 wins (not bot mode)
+                    alpacaAnimationType = .celebration
+                } else if game.currentPlayer.name == game.player2.name && game.gameType == .bot {
+                    // Bot wins
+                    alpacaAnimationType = .sad
+                } else {
+                    // Player 2 wins (peer mode) or Player 1 wins (bot mode)
+                    alpacaAnimationType = .celebration
+                }
+                showAlpacaAnimation = true
+            }
+        }
+        .overlay {
+            if showAlpacaAnimation {
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                    
+                    AlpacaAnimationView(animationType: alpacaAnimationType)
+                        .onAppear {
+                            // Auto-hide animation after delay
+                            let delay: Double = alpacaAnimationType == .thinking ? 0 : 3.0
+                            if delay > 0 {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                                    withAnimation(.easeOut(duration: 0.5)) {
+                                        showAlpacaAnimation = false
+                                    }
+                                }
+                            }
+                        }
+                }
+                .transition(.opacity)
             }
         }
         .inNavigationStack()
@@ -86,16 +134,7 @@ struct GameView: View {
                         RoundedRectangle(cornerRadius: 20)
                             .fill(.ultraThinMaterial)
                         
-                        VStack(spacing: 15) {
-                            Text("🤔 Thinking...")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-                            
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                        }
+                        AlpacaAnimationView(animationType: .thinking)
                         .padding(30)
                         .background(
                             RoundedRectangle(cornerRadius: 15)
@@ -407,15 +446,7 @@ struct GameView: View {
                     RoundedRectangle(cornerRadius: 25)
                         .fill(.ultraThinMaterial)
                     
-                    VStack(spacing: 20) {
-                        Text("🤔 Thinking...")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.primary)
-                        
-                        ProgressView()
-                            .scaleEffect(2.0)
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                    }
+                    AlpacaAnimationView(animationType: .thinking)
                     .padding(40)
                     .background(
                         RoundedRectangle(cornerRadius: 20)

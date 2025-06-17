@@ -2,6 +2,8 @@ import SwiftUI
 
 @MainActor
 class GameService: ObservableObject {
+    private let soundManager = SoundManager.shared
+    private let hapticManager = HapticManager.shared
     @Published var player1 = Player(gamePiece: .x, name: "Player 1")
     @Published var player2 = Player(gamePiece: .o, name: "Player 2")
     @Published var possibleMoves = Move.all
@@ -66,6 +68,20 @@ class GameService: ObservableObject {
     func checkIfWinner() {
         if player1.isWinner || player2.isWinner {
             gameOver = true
+            
+            // Play win/lose sound and haptic
+            if player1.isWinner && gameType != .bot {
+                soundManager.playSound(SoundManager.SoundEffect.win)
+                hapticManager.playHaptic(HapticManager.Feedback.win)
+            } else if player2.isWinner {
+                if gameType == .bot {
+                    soundManager.playSound(SoundManager.SoundEffect.lose)
+                    hapticManager.playHaptic(HapticManager.Feedback.lose)
+                } else {
+                    soundManager.playSound(SoundManager.SoundEffect.win)
+                    hapticManager.playHaptic(HapticManager.Feedback.win)
+                }
+            }
         }
     }
     
@@ -76,6 +92,10 @@ class GameService: ObservableObject {
     
     func makeMove(at index: Int) {
         if gameBoard[index].player == nil {
+            // Play move sound and haptic
+            soundManager.playSound(SoundManager.SoundEffect.move)
+            hapticManager.playHaptic(HapticManager.Feedback.move)
+            
             withAnimation {
                 updateMoves(index: index)
             }
@@ -91,14 +111,22 @@ class GameService: ObservableObject {
                     }
                 }
             }
-            if possibleMoves.isEmpty {
+            if possibleMoves.isEmpty && !gameOver {
                 gameOver = true
+                // Play tie sound and haptic
+                soundManager.playSound(SoundManager.SoundEffect.tie)
+                hapticManager.playHaptic(HapticManager.Feedback.tie)
             }
         }
     }
     
     func deviceMove() async {
         isThinking.toggle()
+        
+        // Play thinking sound and haptic
+        soundManager.playSound(SoundManager.SoundEffect.thinking)
+        hapticManager.playHaptic(HapticManager.Feedback.thinking)
+        
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         
         // Find the best move using strategy

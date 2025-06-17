@@ -14,6 +14,8 @@ struct StartView: View {
     @State private var titleOpacity: Double = 0
     @State private var contentOffset: CGFloat = 50
     @State private var contentOpacity: Double = 0
+    private let soundManager = SoundManager.shared
+    private let hapticManager = HapticManager.shared
     
     init(yourName: String) {
         self.yourName = yourName
@@ -172,6 +174,8 @@ struct StartView: View {
             VStack(spacing: 20) {
                 ForEach([GameType.single, GameType.bot, GameType.peer], id: \.self) { type in
                     Button(action: {
+                        soundManager.playSound(SoundManager.SoundEffect.button)
+                        hapticManager.playHaptic(HapticManager.Feedback.button)
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                             gameType = type
                         }
@@ -282,6 +286,8 @@ struct StartView: View {
     var gameControls: some View {
         VStack(spacing: 15) {
             Button("🎮 Start Game") {
+                soundManager.playSound(SoundManager.SoundEffect.button)
+                hapticManager.playHaptic(HapticManager.Feedback.button)
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     game.setupGame(gameType: gameType, player1Name: yourName, player2Name: opponentName)
                     focus = false
@@ -313,6 +319,8 @@ struct StartView: View {
                     .foregroundColor(.secondary)
                 
                 Button("✏️ Change my paca name") {
+                    soundManager.playSound(SoundManager.SoundEffect.button)
+                    hapticManager.playHaptic(HapticManager.Feedback.button)
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                         changeName.toggle()
                     }
@@ -329,6 +337,8 @@ struct StartView: View {
     var iPadGameControls: some View {
         VStack(spacing: 30) {
             Button("🎮 Start Game") {
+                soundManager.playSound(SoundManager.SoundEffect.button)
+                hapticManager.playHaptic(HapticManager.Feedback.button)
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     game.setupGame(gameType: gameType, player1Name: yourName, player2Name: opponentName)
                     focus = false
@@ -363,6 +373,8 @@ struct StartView: View {
                         .foregroundColor(.secondary)
                     
                     Button("✏️ Change my paca name") {
+                        soundManager.playSound(SoundManager.SoundEffect.button)
+                        hapticManager.playHaptic(HapticManager.Feedback.button)
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                             changeName.toggle()
                         }
