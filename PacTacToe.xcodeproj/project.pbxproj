@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17EF09812E02111400557413 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17EF097F2E02111400557413 /* HapticManager.swift */; };
+		17EF09822E02111400557413 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17EF09802E02111400557413 /* SoundManager.swift */; };
+		17EF09842E02121600557413 /* AlpacaAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17EF09832E02121600557413 /* AlpacaAnimationView.swift */; };
 		BB120C0028D22E3A0076D9DB /* MPConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB120BFF28D22E3A0076D9DB /* MPConnectionManager.swift */; };
 		BB1E20A528CE80EA004A7512 /* GameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1E20A428CE80EA004A7512 /* GameService.swift */; };
 		BB1E20A728CE87AE004A7512 /* GameSquare.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1E20A628CE87AE004A7512 /* GameSquare.swift */; };
@@ -25,6 +28,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		17EF097F2E02111400557413 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		17EF09802E02111400557413 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
+		17EF09832E02121600557413 /* AlpacaAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlpacaAnimationView.swift; sourceTree = "<group>"; };
 		BB120BFD28D22D870076D9DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		BB120BFF28D22E3A0076D9DB /* MPConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConnectionManager.swift; sourceTree = "<group>"; };
 		BB1E20A428CE80EA004A7512 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
@@ -118,6 +124,9 @@
 		BBFFED8328CD14140025EEF5 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				17EF09832E02121600557413 /* AlpacaAnimationView.swift */,
+				17EF097F2E02111400557413 /* HapticManager.swift */,
+				17EF09802E02111400557413 /* SoundManager.swift */,
 				BBFFED8428CD14310025EEF5 /* ViewModifiers.swift */,
 			);
 			path = Utilities;
@@ -209,9 +218,12 @@
 				BB8678AC28D108E20072C2CA /* YourNameView.swift in Sources */,
 				BBFFED7228CD0DC40025EEF5 /* StartView.swift in Sources */,
 				BBFFED8128CD107B0025EEF5 /* GameModels.swift in Sources */,
+				17EF09842E02121600557413 /* AlpacaAnimationView.swift in Sources */,
 				BBFFED7028CD0DC40025EEF5 /* AppEntry.swift in Sources */,
 				BB1E20A528CE80EA004A7512 /* GameService.swift in Sources */,
 				BBFFED8528CD14310025EEF5 /* ViewModifiers.swift in Sources */,
+				17EF09812E02111400557413 /* HapticManager.swift in Sources */,
+				17EF09822E02111400557413 /* SoundManager.swift in Sources */,
 				BB45CFC928D252E80090BE2B /* MPPeersView.swift in Sources */,
 				BB120C0028D22E3A0076D9DB /* MPConnectionManager.swift in Sources */,
 				BBFFED8828CD15530025EEF5 /* GameView.swift in Sources */,
