@@ -155,7 +155,7 @@ struct GameView: View {
             VStack(spacing: 15) {
                 if game.gameOver {
                     VStack(spacing: 10) {
-                        Text("🎉 Game Over! 🎉")
+                        Text("Game Over!")
                             .font(.title)
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
@@ -281,7 +281,7 @@ struct GameView: View {
                 // Game over section
                 if game.gameOver {
                     VStack(spacing: 15) {
-                        Text("🎉 Game Over! 🎉")
+                        Text("Game Over!")
                             .font(.system(size: 36, weight: .bold))
                             .foregroundColor(.primary)
                         
