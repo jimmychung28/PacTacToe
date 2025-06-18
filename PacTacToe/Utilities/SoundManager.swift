@@ -1,5 +1,7 @@
 import Foundation
 import AVFoundation
+import AudioToolbox
+import UIKit
 
 @MainActor
 class SoundManager: ObservableObject {
@@ -10,6 +12,7 @@ class SoundManager: ObservableObject {
     
     private init() {
         setupAudioSession()
+        loadSoundPreference()
         loadSounds()
     }
     
@@ -35,24 +38,73 @@ class SoundManager: ObservableObject {
         ]
         
         for (key, filename) in soundFiles {
-            if let url = Bundle.main.url(forResource: filename, withExtension: "wav") {
+            // First try to load from Assets catalog
+            if let asset = NSDataAsset(name: filename) {
+                do {
+                    let player = try AVAudioPlayer(data: asset.data)
+                    player.prepareToPlay()
+                    audioPlayers[key] = player
+                    print("✅ Successfully loaded sound from Assets: \(filename)")
+                } catch {
+                    print("❌ Failed to load sound from Assets \(filename): \(error)")
+                }
+            } 
+            // Then try regular bundle resource
+            else if let url = Bundle.main.url(forResource: filename, withExtension: "wav") {
                 do {
                     let player = try AVAudioPlayer(contentsOf: url)
                     player.prepareToPlay()
                     audioPlayers[key] = player
+                    print("✅ Successfully loaded sound from bundle: \(filename)")
                 } catch {
-                    print("Failed to load sound \(filename): \(error)")
+                    print("❌ Failed to load sound \(filename): \(error)")
                 }
+            } else {
+                print("⚠️ Sound file not found: \(filename).wav")
             }
         }
+        print("🔊 SoundManager loaded \(audioPlayers.count) out of \(soundFiles.count) sounds")
     }
     
     func playSound(_ soundName: String) {
-        guard isSoundEnabled else { return }
+        guard isSoundEnabled else { 
+            print("🔇 Sound disabled, not playing: \(soundName)")
+            return 
+        }
         
-        audioPlayers[soundName]?.stop()
-        audioPlayers[soundName]?.currentTime = 0
-        audioPlayers[soundName]?.play()
+        guard let player = audioPlayers[soundName] else {
+            print("⚠️ Sound not found: \(soundName), using system sound")
+            // Use system sounds as fallback
+            playSystemSound(for: soundName)
+            return
+        }
+        
+        player.stop()
+        player.currentTime = 0
+        let success = player.play()
+        print("🔊 Playing sound: \(soundName) - Success: \(success)")
+    }
+    
+    private func playSystemSound(for soundName: String) {
+        let soundID: SystemSoundID
+        
+        switch soundName {
+        case "move", "button":
+            soundID = 1104 // Tink sound
+        case "win", "game_start":
+            soundID = 1025 // Bell sound
+        case "lose", "error":
+            soundID = 1073 // Error sound
+        case "tie":
+            soundID = 1103 // Beep sound
+        case "thinking":
+            soundID = 1106 // Pop sound
+        default:
+            soundID = 1104 // Default tink
+        }
+        
+        AudioServicesPlaySystemSound(soundID)
+        print("🔊 Played system sound ID: \(soundID) for: \(soundName)")
     }
     
     func toggleSound() {
@@ -61,7 +113,8 @@ class SoundManager: ObservableObject {
     }
     
     func loadSoundPreference() {
-        isSoundEnabled = UserDefaults.standard.bool(forKey: "soundEnabled")
+        isSoundEnabled = UserDefaults.standard.object(forKey: "soundEnabled") as? Bool ?? true
+        print("🔊 Sound preference loaded: \(isSoundEnabled)")
     }
 }
 
