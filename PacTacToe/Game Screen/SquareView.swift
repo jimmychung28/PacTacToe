@@ -62,8 +62,8 @@ struct SquareView: View {
                 }
             }
         }
-        .onChange(of: game.gameBoard[index].player) { player in
-            if player != nil {
+        .onChange(of: game.gameBoard[index].player) { oldValue, newValue in
+            if newValue != nil {
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     pieceScale = 1.0
                 }

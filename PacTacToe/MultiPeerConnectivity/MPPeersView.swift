@@ -96,7 +96,7 @@ struct MPPeersView: View {
             connectionManager.stopAdvertising()
             connectionManager.isAvailableToPlay = false
         }
-        .onChange(of: connectionManager.paired) { newValue in
+        .onChange(of: connectionManager.paired) { oldValue, newValue in
             startGame = newValue
         }
     }

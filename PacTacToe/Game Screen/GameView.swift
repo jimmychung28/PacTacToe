@@ -32,8 +32,8 @@ struct GameView: View {
                 alpacaAnimationType = .entrance
             }
         }
-        .onChange(of: game.gameOver) { gameOver in
-            if gameOver {
+        .onChange(of: game.gameOver) { oldValue, newValue in
+            if newValue {
                 if game.possibleMoves.isEmpty {
                     // Tie game
                     alpacaAnimationType = .confused
@@ -91,7 +91,7 @@ struct GameView: View {
                     }
                 }
             
-            if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy{ $0 == false} {
+            if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy({ $0 == false }) {
                 Text("Select a player to start")
                     .transition(.scale.combined(with: .opacity))
             }
@@ -241,7 +241,7 @@ struct GameView: View {
                         }
                     }
                 
-                if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy{ $0 == false} {
+                if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy({ $0 == false }) {
                     Text("Select a player to start")
                         .font(.title2)
                         .transition(.scale.combined(with: .opacity))
