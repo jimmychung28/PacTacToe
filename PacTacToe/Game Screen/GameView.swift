@@ -13,9 +13,11 @@ struct GameView: View {
     var body: some View {
         GeometryReader { geometry in
             let isIPad = geometry.size.width > 768
+            let availableWidth = geometry.size.width
+            let availableHeight = geometry.size.height
             
             if isIPad {
-                iPadLayout
+                iPadLayout(availableWidth: availableWidth, availableHeight: availableHeight)
             } else {
                 iPhoneLayout
             }
@@ -77,6 +79,7 @@ struct GameView: View {
     
     var iPhoneLayout: some View {
         VStack {
+            Spacer(minLength: 10)
             Text("Pac-Tac-Toe 🦙")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -127,7 +130,7 @@ struct GameView: View {
             .disabled(game.gameStarted)
             .animation(.spring(response: 0.6, dampingFraction: 0.8), value: game.gameStarted)
             
-            gameBoard
+            gameBoard(availableWidth: UIScreen.main.bounds.width)
             .overlay {
                 if game.isThinking {
                     ZStack {
@@ -204,9 +207,7 @@ struct GameView: View {
             }
             .animation(.spring(response: 0.8, dampingFraction: 0.6), value: game.gameOver)
             
-            Spacer()
-            
-            Spacer()
+            Spacer(minLength: 20)
         }
         .padding()
         .toolbar {
@@ -225,7 +226,7 @@ struct GameView: View {
         }
     }
     
-    var iPadLayout: some View {
+    func iPadLayout(availableWidth: CGFloat, availableHeight: CGFloat) -> some View {
         HStack(spacing: 40) {
             // Left side - Game info and controls
             VStack(spacing: 30) {
@@ -337,10 +338,12 @@ struct GameView: View {
             
             // Right side - Game board
             VStack {
-                iPadGameBoard
+                Spacer(minLength: 40)
+                iPadGameBoard(availableWidth: availableWidth, availableHeight: availableHeight)
                     .disabled(game.boardDisabled ||
                               game.gameType == .peer &&
                               connectionManager.myPeerId.displayName != game.currentPlayer.name)
+                Spacer()
             }
             .padding(.trailing, 40)
         }
@@ -361,21 +364,27 @@ struct GameView: View {
         }
     }
     
-    var gameBoard: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 8) {
+    func gameBoard(availableWidth: CGFloat) -> some View {
+        let padding: CGFloat = 32 // Total horizontal padding from .padding()
+        let spacing: CGFloat = 8
+        let availableBoardWidth = availableWidth - padding
+        let maxSquareSize = min((availableBoardWidth - 2 * spacing) / 3, 100)
+        let squareSize = max(maxSquareSize, 70) // Minimum 70x70 for phones
+        
+        return VStack(spacing: spacing) {
+            HStack(spacing: spacing) {
                 ForEach(0...2, id: \.self) { index in
-                    SquareView(index: index)
+                    SquareView(index: index, squareSize: squareSize)
                 }
             }
-            HStack(spacing: 8) {
+            HStack(spacing: spacing) {
                 ForEach(3...5, id: \.self) { index in
-                    SquareView(index: index)
+                    SquareView(index: index, squareSize: squareSize)
                 }
             }
-            HStack(spacing: 8) {
+            HStack(spacing: spacing) {
                 ForEach(6...8, id: \.self) { index in
-                    SquareView(index: index)
+                    SquareView(index: index, squareSize: squareSize)
                 }
             }
         }
@@ -416,25 +425,35 @@ struct GameView: View {
         }
     }
     
-    var iPadGameBoard: some View {
-        VStack(spacing: 15) {
-            HStack(spacing: 15) {
+    func iPadGameBoard(availableWidth: CGFloat, availableHeight: CGFloat) -> some View {
+        let leftPanelWidth: CGFloat = 400
+        let horizontalPadding: CGFloat = 80 // 40 each side
+        let spacing: CGFloat = 40
+        let boardSpacing: CGFloat = 15
+        let boardPadding: CGFloat = 30
+        
+        let availableBoardWidth = availableWidth - leftPanelWidth - horizontalPadding - spacing
+        let maxSquareSize = min((availableBoardWidth - 2 * boardSpacing - 2 * boardPadding) / 3, 140)
+        let squareSize = max(maxSquareSize, 80) // Minimum 80x80
+        
+        return VStack(spacing: boardSpacing) {
+            HStack(spacing: boardSpacing) {
                 ForEach(0...2, id: \.self) { index in
-                    iPadSquareView(index: index)
+                    iPadSquareView(index: index, squareSize: squareSize)
                 }
             }
-            HStack(spacing: 15) {
+            HStack(spacing: boardSpacing) {
                 ForEach(3...5, id: \.self) { index in
-                    iPadSquareView(index: index)
+                    iPadSquareView(index: index, squareSize: squareSize)
                 }
             }
-            HStack(spacing: 15) {
+            HStack(spacing: boardSpacing) {
                 ForEach(6...8, id: \.self) { index in
-                    iPadSquareView(index: index)
+                    iPadSquareView(index: index, squareSize: squareSize)
                 }
             }
         }
-        .padding(30)
+        .padding(boardPadding)
         .background(
             RoundedRectangle(cornerRadius: 25)
                 .fill(Color.gray.opacity(0.05))
@@ -447,7 +466,7 @@ struct GameView: View {
                         .fill(.ultraThinMaterial)
                     
                     AlpacaAnimationView(animationType: .thinking)
-                    .padding(40)
+                    .padding(boardPadding + 10)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color(.systemBackground))
@@ -463,7 +482,7 @@ struct GameView: View {
     }
     
     @ViewBuilder
-    func iPadSquareView(index: Int) -> some View {
+    func iPadSquareView(index: Int, squareSize: CGFloat) -> some View {
         Button {
             if !game.isThinking {
                 game.makeMove(at: index)
@@ -474,18 +493,18 @@ struct GameView: View {
             }
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: min(squareSize * 0.14, 20))
                     .fill(game.gameBoard[index].player != nil ? Color.gray.opacity(0.1) : Color.blue.opacity(0.1))
-                    .frame(width: 140, height: 140)
+                    .frame(width: squareSize, height: squareSize)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.blue.opacity(0.3), lineWidth: 3)
+                        RoundedRectangle(cornerRadius: min(squareSize * 0.14, 20))
+                            .stroke(Color.blue.opacity(0.3), lineWidth: max(squareSize * 0.02, 2))
                     )
-                    .shadow(radius: 8)
+                    .shadow(radius: max(squareSize * 0.06, 4))
                 
                 game.gameBoard[index].image
                     .resizable()
-                    .frame(width: 90, height: 90)
+                    .frame(width: squareSize * 0.64, height: squareSize * 0.64)
                     .opacity(game.gameBoard[index].player != nil ? 1.0 : 0.0)
                     .scaleEffect(game.gameBoard[index].player != nil ? 1.0 : 0.0)
                     .animation(.spring(response: 0.6, dampingFraction: 0.8), value: game.gameBoard[index].player != nil)

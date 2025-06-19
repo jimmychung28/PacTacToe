@@ -7,6 +7,12 @@ struct SquareView: View {
     @State private var pieceScale: CGFloat = 0.0
     private let hapticManager = HapticManager.shared
     let index: Int
+    let squareSize: CGFloat
+    
+    init(index: Int, squareSize: CGFloat = 100) {
+        self.index = index
+        self.squareSize = squareSize
+    }
     
     var body: some View {
         Button {
@@ -36,19 +42,19 @@ struct SquareView: View {
             }
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: min(squareSize * 0.12, 12))
                     .fill(game.gameBoard[index].player != nil ? Color.gray.opacity(0.1) : Color.blue.opacity(0.1))
-                    .frame(width: 100, height: 100)
+                    .frame(width: squareSize, height: squareSize)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.blue.opacity(0.3), lineWidth: 2)
+                        RoundedRectangle(cornerRadius: min(squareSize * 0.12, 12))
+                            .stroke(Color.blue.opacity(0.3), lineWidth: max(squareSize * 0.02, 2))
                     )
                     .scaleEffect(isPressed ? 0.95 : 1.0)
-                    .shadow(radius: isPressed ? 2 : 4)
+                    .shadow(radius: isPressed ? 2 : max(squareSize * 0.04, 4))
                 
                 game.gameBoard[index].image
                     .resizable()
-                    .frame(width: 60, height: 60)
+                    .frame(width: squareSize * 0.6, height: squareSize * 0.6)
                     .scaleEffect(pieceScale)
                     .opacity(game.gameBoard[index].player != nil ? 1.0 : 0.0)
             }
@@ -76,7 +82,7 @@ struct SquareView: View {
 
 struct SquareView_Previews: PreviewProvider {
     static var previews: some View {
-        SquareView(index: 1)
+        SquareView(index: 1, squareSize: 100)
             .environmentObject(GameService())
             .environmentObject(MPConnectionManager(yourName: "Sample"))
     }
